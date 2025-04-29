@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture Exam 3 - True/False Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+    #quiz-container { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+    .option-btn { display: block; width: 90%; margin: 10px auto; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .option-btn:hover { background: #0056b3; }
+    #feedback { margin-top: 20px; font-size: 18px; }
+    #nav-buttons { margin-top: 20px; }
+    .nav-btn { margin: 5px; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .nav-btn:hover { background: #1e7e34; }
+    #progress, #score { margin-bottom: 15px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<img id="respiratory-diagram" src="Screenshot2025-04-28at6.52.44PM.png" alt="Respiratory Volume Diagram" style="max-width:100%; height:auto; display:none;">
+
+<div id="quiz-container">
+  <div id="progress"></div>
+  <div id="score"></div>
+  <h2 id="question">Loading...</h2>
+  <div id="options"></div>
+  <div id="feedback"></div>
+  <div id="nav-buttons">
+    <button class="nav-btn" id="prev-btn" onclick="prevQuestion()">Previous</button>
+    <button class="nav-btn" id="next-btn" onclick="nextQuestion()">Next</button>
+  </div>
+  <div id="jump-to-question" style="margin-top: 20px;">
+    <input type="number" id="questionNumberInput" min="1" placeholder="Enter question number" style="padding: 8px; width: 50%;">
+    <button class="nav-btn" onclick="jumpToQuestion()">Go</button>
+  </div>
+</div>
+
+<script>
+const quiz = [
+        {
+            question: "How much do you love Abdulla?",
+                type: "text",
+                answer: "He loves you more<3",
+                explanation: "The correct answer is: He loves you more<3."
+              },
+
+  { question: "1. Carbonic anhydrase facilitates the transport of carbon dioxide in blood plasma.", options: ["True", "False"], answer: "True", explanation: "Carbonic anhydrase helps CO2 dissolve into plasma." },
+  { question: "2. Increasing the levels of erythropoietin would decrease a person's red blood cell count.", options: ["True", "False"], answer: "False", explanation: "Erythropoietin increases red blood cell production." },
+  { question: "3. Each erythrocyte contains approximately 200 to 300 million molecules of hemoglobin.", options: ["True", "False"], answer: "True", explanation: "Each red blood cell is packed with hemoglobin molecules." },
+  { question: "4. The carotid artery is responsible for bringing oxygenated blood to the brain.", options: ["True", "False"], answer: "True", explanation: "Carotid arteries deliver blood to the brain." },
+  { question: "5. Lymph capillaries found at the level of the small intestine are called lacteals.", options: ["True", "False"], answer: "True", explanation: "Lacteals absorb fats in the intestines." },
+  { question: "6. Lymphatic vessels contain semilunar valves to prevent backflow of lymph.", options: ["True", "False"], answer: "True", explanation: "Semilunar valves help move lymph forward." },
+  { question: "7. Breathing movements and postural changes do not significantly impact the circulation of lymph.", options: ["True", "False"], answer: "False", explanation: "Breathing movements help lymph circulation." },
+  { question: "8. The immune system plays a role in removing debris from arterial spaces.", options: ["True", "False"], answer: "True", explanation: "Immune cells clean up arterial debris." },
+  { question: "9. Self-tolerance refers to the ability of the immune system to distinguish between foreign and 'self' cells.", options: ["True", "False"], answer: "True", explanation: "Self-tolerance prevents autoimmunity." },
+  { question: "10. Histamine is utilized to make blood vessels more leaky facilitating inflammation.", options: ["True", "False"], answer: "True", explanation: "Histamine increases vessel permeability during inflammation." },
+  { question: "11. 2nd line defense immunological mechanisms include inflammation, fever and complement proteins.", options: ["True", "False"], answer: "True", explanation: "These are part of innate immune response." },
+  { question: "12. The immune system has no way to neutralize parasitic worms.", options: ["True", "False"], answer: "False", explanation: "Eosinophils target parasitic worms." },
+  { question: "13. White blood cells can target and destroy cancerous cells in the body.", options: ["True", "False"], answer: "True", explanation: "Immune surveillance can eliminate cancerous cells." },
+  { question: "14. The immune system can neutralize viral threats by blocking viral binding sites with antibodies.", options: ["True", "False"], answer: "True", explanation: "Neutralizing antibodies block virus entry." },
+  { question: "15. Gas exchange of oxygen and carbon dioxide occurs at the level of alveoli in lung tissue.", options: ["True", "False"], answer: "True", explanation: "Alveoli are the main site of gas exchange." },
+  { question: "16. It is safe to give A red blood cells to a person with an AB blood type.", options: ["True", "False"], answer: "True", explanation: "AB individuals can receive A blood." },
+  { question: "17. The lymphatic system returns leaked proteins back into the circulatory system.", options: ["True", "False"], answer: "True", explanation: "Lymph returns leaked proteins to blood." },
+  { question: "18. Breathing movements and postural changes do not play a role in circulating lymphatic fluid.", options: ["True", "False"], answer: "False", explanation: "They actually assist lymph flow." },
+  { question: "19. The swelling of lymph nodes during infection is called adenitis.", options: ["True", "False"], answer: "True", explanation: "Adenitis = inflamed lymph nodes." },
+  { question: "20. Efferent lymph vessels bring lymphatic fluid out of a lymph node.", options: ["True", "False"], answer: "True", explanation: "Efferent vessels exit the lymph node." },
+  { question: "21. The maximum air volume that can be moved in and out of the lungs is called the tidal volume.", options: ["True", "False"], answer: "False", explanation: "That is vital capacity, not tidal volume." },
+  { question: "22. Immunological complement has the ability to cause cell lysis in bacterial cells.", options: ["True", "False"], answer: "True", explanation: "Complement proteins can lyse bacteria." },
+  { question: "23. Innate immune responses are slow acting, specific responses to pathogens.", options: ["True", "False"], answer: "False", explanation: "Innate responses are fast and nonspecific." },
+
+// Matching Questions (24–47) corrected
+
+// Blood Type Matching (24–29)
+{ question: "24. Individuals with this blood type can receive blood from anyone.", options: ["type A", "type B", "type AB", "type O"], answer: "type AB", explanation: "Type AB individuals are universal recipients." },
+{ question: "25. Individuals with this blood type can transfuse blood into anyone.", options: ["type A", "type B", "type AB", "type O"], answer: "type O", explanation: "Type O individuals are universal donors." },
+{ question: "26. A antigens on cell surface and B antibodies in circulation.", options: ["type A", "type B", "type AB", "type O"], answer: "type A", explanation: "Type A blood has A antigens and anti-B antibodies." },
+{ question: "27. A and B antigens on cell surface.", options: ["type A", "type B", "type AB", "type O"], answer: "type AB", explanation: "Type AB blood has both A and B antigens." },
+{ question: "28. Neither A nor B antigens on cell surface, but has both A and B antibodies.", options: ["type A", "type B", "type AB", "type O"], answer: "type O", explanation: "Type O blood has no antigens, but both antibodies." },
+{ question: "29. Neither A or B antibodies in circulation.", options: ["type A", "type B", "type AB", "type O"], answer: "type AB", explanation: "Type AB has no antibodies against A or B." },
+
+// Epidermis Cell Layer Matching (30–35)
+{ question: "30. The only epidermal cell layer undergoing mitosis.", options: ["stratum granulosum", "stratum lucidum", "stratum corneum", "stratum basale", "stratum spinosum"], answer: "stratum basale", explanation: "Stratum basale is where mitosis occurs." },
+{ question: "31. The second cell layer in the epidermis normally 8 to 10 cell layers thick.", options: ["stratum granulosum", "stratum lucidum", "stratum corneum", "stratum basale", "stratum spinosum"], answer: "stratum spinosum", explanation: "Stratum spinosum is several layers thick." },
+{ question: "32. Contains cells filled with the keratin precursor eleidin.", options: ["stratum granulosum", "stratum lucidum", "stratum corneum", "stratum basale", "stratum spinosum"], answer: "stratum lucidum", explanation: "Stratum lucidum has eleidin precursor." },
+{ question: "33. Filled with keratohyalin molecules.", options: ["stratum granulosum", "stratum lucidum", "stratum corneum", "stratum basale", "stratum spinosum"], answer: "stratum granulosum", explanation: "Stratum granulosum contains keratohyalin." },
+{ question: "34. Composed entirely of dead cells saturated with keratin.", options: ["stratum granulosum", "stratum lucidum", "stratum corneum", "stratum basale", "stratum spinosum"], answer: "stratum corneum", explanation: "Stratum corneum is dead keratinized cells." },
+{ question: "35. The most superficial skin cell layer.", options: ["stratum granulosum", "stratum lucidum", "stratum corneum", "stratum basale", "stratum spinosum"], answer: "stratum corneum", explanation: "The stratum corneum is the topmost layer." },
+
+// Blood Cells Matching (36–41)
+{ question: "36. Synonymous with red blood cells.", options: ["erythrocytes", "leukocytes", "erythropoietin", "platelets", "stem cells"], answer: "erythrocytes", explanation: "Erythrocytes are red blood cells." },
+{ question: "37. These cells play a critical role in the immune system.", options: ["erythrocytes", "leukocytes", "erythropoietin", "platelets", "stem cells"], answer: "leukocytes", explanation: "Leukocytes are white blood cells for immunity." },
+{ question: "38. The parents of all blood cells.", options: ["erythrocytes", "leukocytes", "erythropoietin", "platelets", "stem cells"], answer: "stem cells", explanation: "Stem cells are precursors to all blood cells." },
+{ question: "39. Stimulates red blood cell production.", options: ["erythrocytes", "leukocytes", "erythropoietin", "platelets", "stem cells"], answer: "erythropoietin", explanation: "Erythropoietin stimulates red blood cell production." },
+{ question: "40. Assist in the closing up of cuts and wounds.", options: ["erythrocytes", "leukocytes", "erythropoietin", "platelets", "stem cells"], answer: "platelets", explanation: "Platelets are responsible for clotting wounds." },
+{ question: "41. Capable of removing viruses and bacteria from the body.", options: ["erythrocytes", "leukocytes", "erythropoietin", "platelets", "stem cells"], answer: "leukocytes", explanation: "Leukocytes help destroy pathogens." },
+
+// Respiratory Matching (42–47)
+{ question: "42. Prevents food from falling down the trachea during swallowing.", options: ["larynx", "epiglottis", "vocal cords", "trachea", "alveoli"], answer: "epiglottis", explanation: "The epiglottis covers the trachea during swallowing." },
+{ question: "43. Helps to modulate sound production during speech.", options: ["larynx", "epiglottis", "vocal cords", "trachea", "alveoli"], answer: "larynx", explanation: "The larynx (voice box) modulates speech." },
+{ question: "44. Folds of tissue that vibrate in the larynx when air flows across them.", options: ["larynx", "epiglottis", "vocal cords", "trachea", "alveoli"], answer: "vocal cords", explanation: "Vocal cords vibrate to produce sound." },
+{ question: "45. Dead-end structures serving as sites for gas exchange.", options: ["larynx", "epiglottis", "vocal cords", "trachea", "alveoli"], answer: "alveoli", explanation: "Alveoli are the primary site for gas exchange." },
+{ question: "46. Largest respiratory passageway.", options: ["larynx", "epiglottis", "vocal cords", "trachea", "alveoli"], answer: "trachea", explanation: "The trachea is the largest airway." },
+{ question: "47. Serve as the site of gas exchange in the lungs.", options: ["larynx", "epiglottis", "vocal cords", "trachea", "alveoli"], answer: "alveoli", explanation: "Alveoli perform the lungs' gas exchange." },
+
+// Multiple Choice Questions (48–70)
+
+{
+  question: "48. What is the proper sequence of air flow in the human respiratory system?",
+  options: ["nasal cavities, larynx, pharynx, bronchi, trachea", "nasal cavities, pharynx, bronchi, larynx, trachea", "nasal cavities, pharynx, larynx, trachea, bronchi", "nasal cavities, larynx, pharynx, trachea, bronchi", "nasal cavities, bronchi, larynx, trachea, pharynx"],
+  answer: "nasal cavities, pharynx, larynx, trachea, bronchi",
+  explanation: "The correct airflow path: nasal cavities → pharynx → larynx → trachea → bronchi."
+},
+{
+  question: "49. Which of the following is NOT a function of the nasal cavities?",
+  options: ["filter dust out of the incoming air", "detect odors", "warm the air", "oxygenate the blood", "moisturize the air"],
+  answer: "oxygenate the blood",
+  explanation: "Oxygenation occurs in the alveoli, not in the nasal cavities."
+},
+{
+  question: "50. In describing the parts of the respiratory system, the word 'septum' designates a partition in the",
+  options: ["larynx", "nasal cavities", "pharynx", "glottis", "lungs"],
+  answer: "nasal cavities",
+  explanation: "The nasal septum divides the nasal cavities."
+},
+{
+  question: "51. Food and drink are prevented from entering the respiratory passageways during swallowing by means of the",
+  options: ["glottis", "pharynx", "epiglottis", "larynx", "trachea"],
+  answer: "epiglottis",
+  explanation: "The epiglottis closes during swallowing to protect the airway."
+},
+{
+  question: "52. The human vocal cords are located in the",
+  options: ["glottis", "pharynx", "trachea", "larynx", "bronchus"],
+  answer: "larynx",
+  explanation: "Vocal cords are housed within the larynx."
+},
+{
+  question: "53. Mucus-secreting cells and cilia in the respiratory system serve what function?",
+  options: ["help air exchange", "trap and remove bacteria and airborne particles", "destroy inhaled bacteria", "warm inspired air", "increase carbon dioxide removal"],
+  answer: "trap and remove bacteria and airborne particles",
+  explanation: "Mucus and cilia trap debris to protect the lungs."
+},
+{
+  question: "54. The most abundant gas in the earth's atmosphere is",
+  options: ["oxygen", "water vapor", "argon", "nitrogen", "carbon dioxide"],
+  answer: "nitrogen",
+  explanation: "Nitrogen makes up about 78% of Earth's atmosphere."
+},
+{
+  question: "55. During inhalation,",
+  options: ["the pressure in the thoracic cavity is greater than the pressure within the lungs", "the pressure in the pleural sac is less than the pressure within the lungs", "the diaphragm moves upward and becomes more curved", "the chest cavity volume decreases", "all of these"],
+  answer: "the pressure in the pleural sac is less than the pressure within the lungs",
+  explanation: "Negative pressure in the pleural sac helps expand the lungs."
+},
+{
+  question: "56. The maximum amount of air that can be taken into the lungs in a single deep breath is the",
+  options: ["vital capacity", "tidal volume", "pleural volume", "alveolar volume", "inspirational capacity"],
+  answer: "vital capacity",
+  explanation: "Vital capacity is the maximum air you can inhale/exhale."
+},
+{
+  question: "57. A normal tidal volume is",
+  options: ["1000 milliliters", "1500 milliliters", "250 milliliters", "750 milliliters", "500 milliliters"],
+  answer: "500 milliliters",
+  explanation: "Tidal volume during normal breathing is about 500 mL."
+},
+{
+  question: "58. Breathing that stops briefly and then resumes spontaneously is called",
+  options: ["apnea", "tachypnea", "bradypnea", "pneumotaxia", "hyperventilation"],
+  answer: "apnea",
+  explanation: "Apnea is a temporary pause in breathing."
+},
+{
+  question: "59. Which cell is NOT involved with immunological responses to pathogens?",
+  options: ["erythrocytes", "neutrophils", "lymphocytes", "eosinophils", "monocytes"],
+  answer: "erythrocytes",
+  explanation: "Erythrocytes (RBCs) transport oxygen, not fight pathogens."
+},
+{
+  question: "60. Individuals with blood type A have",
+  options: ["A antigens and B antibodies", "B antigens and A antibodies", "A antibodies and B antibodies", "A antigens and A antibodies", "A antigens and O antibodies"],
+  answer: "A antigens and B antibodies",
+  explanation: "Blood type A means A antigens on cells and anti-B antibodies in plasma."
+},
+{
+  question: "61. What percent of the total blood volume is plasma?",
+  options: ["15 to 25", "33 to 40", "50 to 60", "66 to 75", "about 80"],
+  answer: "50 to 60",
+  explanation: "Plasma makes up around 55% of blood volume."
+},
+{
+  question: "62. All but which of the following can occur in the blood?",
+  options: ["digestion of nutrients", "combining of oxygen with hemoglobin", "transport of phagocytic cells", "stabilization of pH", "equalization of internal temperatures"],
+  answer: "digestion of nutrients",
+  explanation: "Digestion occurs in the digestive tract, not in the blood."
+},
+{
+  question: "63. Red blood cells do not contain",
+  options: ["a cell membrane", "cytoplasm", "hemoglobin", "a nucleus", "water"],
+  answer: "a nucleus",
+  explanation: "Mature red blood cells lack a nucleus."
+},
+{
+  question: "64. The defense response triggered by the mixing of two incompatible blood types is called",
+  options: ["coagulation", "agglutination", "dehydration", "phagocytosis", "opsonization"],
+  answer: "agglutination",
+  explanation: "Agglutination is clumping due to antigen-antibody reactions."
+},
+{
+  question: "65. Immunity that develops over time due to exposure to various antigens is termed",
+  options: ["adaptive immunity", "learned immunity", "compensated immunity", "coordinated immunity", "innate immunity"],
+  answer: "adaptive immunity",
+  explanation: "Adaptive immunity is acquired over time."
+},
+{
+  question: "66. Which of the following white blood cells targets worms and fungi?",
+  options: ["neutrophils", "basophils", "eosinophils", "erythrocytes", "Killer T cells"],
+  answer: "eosinophils",
+  explanation: "Eosinophils attack parasitic worms and fungi."
+},
+{
+  question: "67. What do large lymph vessels have in common with veins?",
+  options: ["they transport deoxygenated blood", "they are a reservoir for blood", "they drain into the inferior vena cava", "they have valves", "they deliver oxygen to tissues"],
+  answer: "they have valves",
+  explanation: "Both veins and lymph vessels have valves to prevent backflow."
+},
+{
+  question: "68. Which of the following act as 'filters' in the lymph system?",
+  options: ["macrophages", "lymph nodes", "complements", "immunoglobulins", "perforins"],
+  answer: "lymph nodes",
+  explanation: "Lymph nodes filter harmful substances from lymph."
+},
+{
+  question: "69. Any organism that causes disease is classified as a(n)",
+  options: ["fomite", "biological vector", "mechanical vector", "pathogen", "antigen"],
+  answer: "pathogen",
+  explanation: "A pathogen is a disease-causing organism."
+},
+{
+  question: "70. The production site for white blood cells is the",
+  options: ["bone marrow", "spleen", "liver", "kidney", "tonsils"],
+  answer: "bone marrow",
+  explanation: "Bone marrow produces all blood cells, including WBCs."
+},
+
+// Respiratory Diagram Identification (75–79)
+
+{
+  question: "Please identify the respiratory volumes indicated on the diagram below.<br><br>75: ___",
+  options: ["tidal volume", "residual volume", "inspiratory reserve volume", "vital capacity", "total lung capacity"],
+  answer: "inspiratory reserve volume",
+  explanation: "75 points to the inspiratory reserve volume (IRV)."
+},
+{
+  question: "Please identify the respiratory volumes indicated on the diagram below.<br><br>76: ___",
+  options: ["tidal volume", "residual volume", "inspiratory reserve volume", "vital capacity", "total lung capacity"],
+  answer: "residual volume",
+  explanation: "76 points to the residual volume (RV)."
+},
+{
+  question: "Please identify the respiratory volumes indicated on the diagram below.<br><br>77: ___",
+  options: ["tidal volume", "residual volume", "inspiratory reserve volume", "vital capacity", "total lung capacity"],
+  answer: "tidal volume",
+  explanation: "77 points to the tidal volume (TV)."
+},
+{
+  question: "Please identify the respiratory volumes indicated on the diagram below.<br><br>78: ___",
+  options: ["tidal volume", "residual volume", "inspiratory reserve volume", "vital capacity", "total lung capacity"],
+  answer: "vital capacity",
+  explanation: "78 represents vital capacity (VC)."
+},
+{
+  question: "Please identify the respiratory volumes indicated on the diagram below.<br><br>79: ___",
+  options: ["tidal volume", "residual volume", "inspiratory reserve volume", "vital capacity", "total lung capacity"],
+  answer: "total lung capacity",
+  explanation: "79 represents total lung capacity (TLC)."
+},
+
+];
+
+let currentQuestion = 0;
+let correctAnswers = 0;
+let answered = Array(quiz.length).fill(null);
+
+function loadQuestion() {
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("prev-btn").style.display = currentQuestion === 0 ? "none" : "inline-block";
+  document.getElementById("progress").textContent = `Question ${currentQuestion + 1} of ${quiz.length}`;
+  document.getElementById("score").textContent = `Correct Answers: ${correctAnswers}`;
+
+  const q = quiz[currentQuestion];
+  document.getElementById("question").innerHTML = q.question;
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  if (q.type === "text") {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = "text-answer";
+    input.placeholder = "Type your answer here";
+    input.style.padding = "10px";
+    input.style.width = "80%";
+    input.style.marginBottom = "10px";
+    optionsDiv.appendChild(input);
+
+    const submitBtn = document.createElement("button");
+    submitBtn.textContent = "Submit";
+    submitBtn.className = "option-btn";
+    submitBtn.onclick = () => {
+      const userInput = document.getElementById("text-answer").value.trim();
+      checkAnswer(userInput);
+    };
+    optionsDiv.appendChild(submitBtn);
+  } else {
+    q.options.forEach(opt => {
+      const button = document.createElement("button");
+      button.textContent = opt;
+      button.className = "option-btn";
+      button.onclick = () => checkAnswer(opt);
+      optionsDiv.appendChild(button);
+    });
+  }
+
+// Show Respiratory Diagram for Questions 75–79
+if (currentQuestion >= 71 && currentQuestion <= 75) {
+    document.getElementById("respiratory-diagram").style.display = "block";
+} else {
+    document.getElementById("respiratory-diagram").style.display = "none";
+}
+
+}
+
+function checkAnswer(selected) {
+  const q = quiz[currentQuestion];
+  if (answered[currentQuestion] === null) {
+    if (selected === q.answer) {
+      correctAnswers++;
+      document.getElementById("feedback").innerHTML = "<span style='color:green;'>Correct!</span>";
+    } else {
+      document.getElementById("feedback").innerHTML = `<span style='color:red;'>Wrong. Correct Answer: ${q.answer}<br>${q.explanation}</span>`;
+    }
+    answered[currentQuestion] = selected;
+  } else {
+    document.getElementById("feedback").innerHTML = "<span style='color:gray;'>You already answered this question.</span>";
+  }
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("next-btn").style.display = "inline-block";
+  document.getElementById("score").textContent = `Correct Answers: ${correctAnswers}`;
+}
+
+function nextQuestion() {
+  if (currentQuestion < quiz.length - 1) {
+    currentQuestion++;
+    loadQuestion();
+  } else {
+    document.getElementById("quiz-container").innerHTML = `<h2>Quiz Complete!</h2><p>Your Score: ${correctAnswers} out of ${quiz.length}</p>`;
+  }
+}
+
+function prevQuestion() {
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    loadQuestion();
+  }
+}
+
+function jumpToQuestion() {
+  const input = document.getElementById("questionNumberInput").value;
+  const target = parseInt(input);
+  if (!isNaN(target) && target >= 1 && target <= quiz.length) {
+    currentQuestion = target - 1;
+    loadQuestion();
+  } else {
+    alert("Invalid question number. Please enter a number between 1 and " + quiz.length + ".");
+  }
+}
+
+window.onload = loadQuestion;
+</script>
+
+</body>
+</html>
+
