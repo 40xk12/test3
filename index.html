@@ -38,13 +38,6 @@
 
 <script>
 const quiz = [
-        {
-            question: "How much do you love Abdulla?",
-                type: "text",
-                answer: "He loves you more<3",
-                explanation: "The correct answer is: He loves you more<3."
-              },
-
   { question: "1. Carbonic anhydrase facilitates the transport of carbon dioxide in blood plasma.", options: ["True", "False"], answer: "True", explanation: "Carbonic anhydrase helps CO2 dissolve into plasma." },
   { question: "2. Increasing the levels of erythropoietin would decrease a person's red blood cell count.", options: ["True", "False"], answer: "False", explanation: "Erythropoietin increases red blood cell production." },
   { question: "3. Each erythrocyte contains approximately 200 to 300 million molecules of hemoglobin.", options: ["True", "False"], answer: "True", explanation: "Each red blood cell is packed with hemoglobin molecules." },
@@ -324,7 +317,7 @@ function loadQuestion() {
   }
 
 // Show Respiratory Diagram for Questions 75–79
-if (currentQuestion >= 71 && currentQuestion <= 75) {
+if (currentQuestion >= 70 && currentQuestion <= 74) {
     document.getElementById("respiratory-diagram").style.display = "block";
 } else {
     document.getElementById("respiratory-diagram").style.display = "none";
